@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
 
     socket.on("addUser", async (userId) => {
         await addUser(userId, socket.id);
-        console.log(users);
+        console.log("connect", users);
         io.emit("getUsers", users);
     });
 
@@ -68,14 +68,18 @@ io.on("connection", (socket) => {
         });
     });
 
+    socket.on("friendRequest", async (data) => {
+        const user = getUser(data.toUser);
+        user && io.to(user.socketId).emit("newFriendRequest", {uid: data.fromUser})
+    })
+
     socket.on("disconnect", async () => {
         console.log("a user disconnected");
         await removeUser(socket.id);
-        console.log(users);
+        console.log("disconnect", users);
         io.emit("getUsers", users);
     });
 });
-
 
 server.listen(process.env.PORT || 3001, () =>
   console.log("Server is listening at port", server.address().port)
